@@ -39,7 +39,10 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             var configuration = node.Element(Consts.ShippingRate.ItemType);
             var item = new ShippingRate
             {
-                Name = configuration!.Element("Name").ValueOrDefault<string>(string.Empty)
+                Name = configuration!.Element("Name").ValueOrDefault<string>(string.Empty),
+                Value = configuration!.Element("Value").ValueOrDefault<string>(string.Empty),
+                Id = configuration!.Element("Id").ValueOrDefault<int>(default),
+                Key = configuration!.Element("Key").ValueOrDefault<Guid>(default)
             };
 
 
