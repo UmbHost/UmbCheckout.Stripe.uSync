@@ -10,6 +10,7 @@ namespace UmbCheckout.Stripe.uSync.Composers
         public void Compose(IUmbracoBuilder builder)
         {
             builder.AddNotificationHandler<OnShippingRateSavedNotification, ShippingRateHandler>();
+            builder.AddNotificationHandler<OnShippingRateDeletedNotification, ShippingRateHandler>();
         }
     }
 }
