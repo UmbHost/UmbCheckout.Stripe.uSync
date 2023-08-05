@@ -36,22 +36,24 @@ namespace UmbCheckout.Stripe.uSync.Serializers
 
         protected override SyncAttempt<ShippingRate> DeserializeCore(XElement node, SyncSerializerOptions options)
         {
-            var configuration = node.Element(Consts.ShippingRate.ItemType);
             var item = new ShippingRate
             {
-                Name = configuration!.Element("Name").ValueOrDefault<string>(string.Empty)
+                Name = node!.Element("Name").ValueOrDefault<string>(string.Empty),
+                Value = node!.Element("Value").ValueOrDefault<string>(string.Empty),
+                Id = node.Attribute("Id").ValueOrDefault(0),
+                Key = node.GetKey()
             };
-
 
             return SyncAttempt<ShippingRate>.Succeed(Consts.ShippingRate.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>());
         }
 
-        public override ShippingRate FindItem(int id) => _stripeShippingRateDatabaseService.GetShippingRate(id).Result ?? new ShippingRate();
-
-        public override ShippingRate FindItem(Guid key)
+        public override ShippingRate FindItem(int id)
         {
             throw new NotImplementedException();
         }
+
+        public override ShippingRate FindItem(Guid key) =>
+            _stripeShippingRateDatabaseService.GetShippingRate(key).Result ?? new ShippingRate();
 
         public override ShippingRate FindItem(string alias)
         {
@@ -60,13 +62,12 @@ namespace UmbCheckout.Stripe.uSync.Serializers
 
         public override void SaveItem(ShippingRate item) => _stripeShippingRateDatabaseService.UpdateShippingRate(item);
 
-        public override void DeleteItem(ShippingRate item)
-        {
-        }
+        public override void DeleteItem(ShippingRate item) =>
+            _stripeShippingRateDatabaseService.DeleteShippingRate(item.Key);
 
         public override string ItemAlias(ShippingRate item) => item.Name.ToSafeAlias(_shortStringHelper);
 
-        public override Guid ItemKey(ShippingRate item) => 
+        public override Guid ItemKey(ShippingRate item) =>
         item.Key;
     }
 }
