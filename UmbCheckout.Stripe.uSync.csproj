@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -20,13 +20,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <PackageReference Include="Umbraco.Cms.Core" Version="10.6.1" />
     <PackageReference Include="uSync.BackOffice" Version="10.6.1" />
   </ItemGroup>
