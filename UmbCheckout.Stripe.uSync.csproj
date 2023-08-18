@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	  <Company>UmbHost Limited</Company>
 	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
 	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
