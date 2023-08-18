@@ -83,10 +83,13 @@ namespace UmbCheckout.Stripe.uSync.Handlers
 
             try
             {
-                var attempts = Export(notification.ShippingRate, Path.Combine(rootFolder, this.DefaultFolder), DefaultConfig);
-                foreach (var attempt in attempts.Where(x => x.Success))
+                if (notification.ShippingRate != null)
                 {
-                    CleanUp(notification.ShippingRate, attempt.FileName, Path.Combine(rootFolder, this.DefaultFolder));
+                    var attempts = Export(notification.ShippingRate, Path.Combine(rootFolder, this.DefaultFolder), DefaultConfig);
+                    foreach (var attempt in attempts.Where(x => x.Success))
+                    {
+                        CleanUp(notification.ShippingRate, attempt.FileName, Path.Combine(rootFolder, this.DefaultFolder));
+                    }
                 }
             }
             catch (Exception ex)
@@ -101,13 +104,16 @@ namespace UmbCheckout.Stripe.uSync.Handlers
 
             try
             {
-                var filename = GetPath(Path.Combine(rootFolder, this.DefaultFolder), notification.ShippingRate,
-                    DefaultConfig.GuidNames, DefaultConfig.UseFlatStructure);
-                var attempt = serializer.SerializeEmpty(notification.ShippingRate, SyncActionType.Delete, string.Empty);
-                if (attempt.Success)
+                if (notification.ShippingRate != null)
                 {
-                    syncFileService.SaveXElement(attempt.Item, filename);
-                    CleanUp(notification.ShippingRate, filename, Path.Combine(rootFolder, this.DefaultFolder));
+                    var filename = GetPath(Path.Combine(rootFolder, this.DefaultFolder), notification.ShippingRate,
+                        DefaultConfig.GuidNames, DefaultConfig.UseFlatStructure);
+                    var attempt = serializer.SerializeEmpty(notification.ShippingRate, SyncActionType.Delete, string.Empty);
+                    if (attempt.Success)
+                    {
+                        syncFileService.SaveXElement(attempt.Item, filename);
+                        CleanUp(notification.ShippingRate, filename, Path.Combine(rootFolder, this.DefaultFolder));
+                    }
                 }
             }
             catch (Exception ex)
