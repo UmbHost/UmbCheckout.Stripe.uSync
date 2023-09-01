@@ -10,7 +10,7 @@
 	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
-	  <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	  <Description>uSync Addon for the Stripe payment provider for UmbCheckout</Description>
 	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
