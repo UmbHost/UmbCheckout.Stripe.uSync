@@ -2379,6 +2379,7 @@
           "Stripe.net": "[43.0.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbHost.Licensing": "[1.2.6, )",
           "Umbraco.Cms.Web.BackOffice": "[10.6.1, )",
           "Umbraco.Cms.Web.Common": "[10.6.1, )",
           "Umbraco.Cms.Web.Website": "[10.6.1, )"
@@ -4613,6 +4614,7 @@
           "Stripe.net": "[43.0.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbHost.Licensing": "[1.2.6, )",
           "Umbraco.Cms.Web.BackOffice": "[10.6.1, )",
           "Umbraco.Cms.Web.Common": "[10.6.1, )",
           "Umbraco.Cms.Web.Website": "[10.6.1, )"
@@ -6874,6 +6876,7 @@
           "Stripe.net": "[43.0.0, )",
           "UmbCheckout.Core": "[1.0.0, )",
           "UmbCheckout.Shared": "[1.0.0, )",
+          "UmbHost.Licensing": "[1.2.6, )",
           "Umbraco.Cms.Web.BackOffice": "[10.6.1, )",
           "Umbraco.Cms.Web.Common": "[10.6.1, )",
           "Umbraco.Cms.Web.Website": "[10.6.1, )"
