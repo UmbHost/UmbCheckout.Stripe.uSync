@@ -60,7 +60,7 @@
 		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="13.0.0" />
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="13.0.0" />
-		<PackageReference Include="uSync.BackOffice" Version="13.0.0-rc2" />
+		<PackageReference Include="uSync.BackOffice" Version="13.0.0" />
 	</ItemGroup>
 
   <ItemGroup>

@@ -2252,6 +2252,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Transitive",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "10.6.1"
+        }
+      },
       "Umbraco.Cms.Examine.Lucene": {
         "type": "Transitive",
         "resolved": "10.6.1",
@@ -4481,6 +4489,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Transitive",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "11.4.2"
+        }
+      },
       "Umbraco.Cms.Examine.Lucene": {
         "type": "Transitive",
         "resolved": "11.4.2",
@@ -4656,14 +4672,12 @@
       },
       "uSync.BackOffice": {
         "type": "Direct",
-        "requested": "[13.0.0-rc2, )",
-        "resolved": "13.0.0-rc2",
-        "contentHash": "NUKR8vNNXpu4twF5cOwT9fYsYts2cbUmwY0Eo2BzHbs6HYa1b+g+bZdohXiTdMzIS5kTEYiBmC+ZpIsLDZ7S0Q==",
+        "requested": "[13.0.0, )",
+        "resolved": "13.0.0",
+        "contentHash": "8BlYTIJJTvFZtdqbdSqWymhyue30dfGXtNINHW/i9eigAwHHYyeBvwytsNyZshvxmPRyvf7e+cN8NxaVSgMmGg==",
         "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "13.0.0-rc3",
-          "Umbraco.Cms.Web.Website": "13.0.0-rc3",
-          "uSync.Community.Contrib": "13.0.0-rc2",
-          "uSync.Core": "13.0.0-rc2"
+          "uSync.Community.Contrib": "13.0.0",
+          "uSync.Core": "13.0.0"
         }
       },
       "Asp.Versioning.Abstractions": {
@@ -6741,6 +6755,14 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
+      "UmbHost.Licensing": {
+        "type": "Transitive",
+        "resolved": "1.2.6",
+        "contentHash": "IiVIrefcRCtwGpz3zfr7boPAJtMvEg7o1svPnLg80AvNcHQmQf9VoappHCg4JFd1txfMydCk/H6eogRyjJD16w==",
+        "dependencies": {
+          "Umbraco.Cms.Web.BackOffice": "13.0.0"
+        }
+      },
       "Umbraco.Cms.Examine.Lucene": {
         "type": "Transitive",
         "resolved": "13.0.0",
@@ -6799,10 +6821,10 @@
       },
       "Umbraco.Cms.Web.Website": {
         "type": "Transitive",
-        "resolved": "13.0.0-rc3",
-        "contentHash": "jXxhuwQ3wB5UL2EAR9TKucdMJ8cIQZxbUsBy1Ye37bst7QLtHYScSAr2J58kAJEg5q9mCcP4zrsGT2Fnwpl3uA==",
+        "resolved": "13.0.0",
+        "contentHash": "EFpo37/hVP53sRZddETv1ozfG87FbboUWjlthqvQVgC1LrLVFB0ozGwnOrcdSad70wGfSqP7OboapWloYwpqRA==",
         "dependencies": {
-          "Umbraco.Cms.Web.Common": "13.0.0-rc3"
+          "Umbraco.Cms.Web.Common": "[13.0.0, 14.0.0)"
         }
       },
       "Umbraco.CSharpTest.Net.Collections": {
@@ -6812,20 +6834,19 @@
       },
       "uSync.Community.Contrib": {
         "type": "Transitive",
-        "resolved": "13.0.0-rc2",
-        "contentHash": "UCX05hnuY/Oi94Tbo/Gqfx4MTlHR1PIoOpvDwUT5T8hGVmkWn63K06aCm7XwJ9JBaBTq2LnElqd6W+b/ryqlXw==",
+        "resolved": "13.0.0",
+        "contentHash": "Kh0kJj3A/DnIMcS9mkTC0kOtP2fjROosThk37RyILFloQMG1MKJ0ROROurWJ1FSDHjzlUdrJZSP8rK8DoJC05g==",
         "dependencies": {
-          "Umbraco.Cms.Web.BackOffice": "13.0.0-rc3",
-          "Umbraco.Cms.Web.Website": "13.0.0-rc3",
-          "uSync.Core": "13.0.0-rc2"
+          "uSync.Core": "13.0.0"
         }
       },
       "uSync.Core": {
         "type": "Transitive",
-        "resolved": "13.0.0-rc2",
-        "contentHash": "rj55B3eeeBdUOeacN8MhuyFkhBI5CGoGL6GsivFvouJjRbIaah7Jzi2JNNLSPg/LG4X7/UM7yozOYcfmWve/XA==",
+        "resolved": "13.0.0",
+        "contentHash": "8l8L3CA6LSxM719Y3vVH4bIjkBocMNPbWC3ejrHDguM45eucw6Rh9WieTG9x+RK2iNgLzXCdDMWb9JCjaGJ1gg==",
         "dependencies": {
-          "Umbraco.Cms.Web.Website": "13.0.0-rc3"
+          "Umbraco.Cms.Web.BackOffice": "13.0.0",
+          "Umbraco.Cms.Web.Website": "13.0.0"
         }
       },
       "umbcheckout.core": {
