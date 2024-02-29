@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -43,17 +43,24 @@
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.1" />
-		<PackageReference Include="uSync.BackOffice" Version="10.6.1" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.1, 11)" />
+		<PackageReference Include="uSync.BackOffice" Version="[10.6.1, 11)" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<PackageReference Include="Umbraco.Cms.Core" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[12.3.4, 13)" />
+		<PackageReference Include="uSync.BackOffice" Version="[12.0.2, 13)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="13.0.0" />
-		<PackageReference Include="uSync.BackOffice" Version="13.0.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14)" />
+		<PackageReference Include="uSync.BackOffice" Version="[13.0.0, 14)" />
 	</ItemGroup>
 
   <ItemGroup>
