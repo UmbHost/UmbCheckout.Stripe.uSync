@@ -6,7 +6,11 @@ This is the Stripe uSync Connector
 
 ## Getting started
 
-Supports Umbraco V10+ (Currently only test with V10)
+Only long term support (LTS) versions for Umbraco are officially supported.
+
+Community contributions for short term support versions (STS) are welcome.
+
+Currently it has been officially tested against Umbraco v10 and v13.
 
 ## Documentation
 
