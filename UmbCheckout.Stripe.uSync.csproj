@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 	  <Company>UmbHost Limited</Company>
-	  <Copyright>(c) 2023 UmbHost Limited</Copyright>
+	  <Copyright>(c) $([System.DateTime]::Now.ToString(`yyyy`)) UmbHost Limited</Copyright>
 	  <PackageProjectUrl>https://umbcheckout.net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/UmbHost/UmbCheckout</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>
@@ -43,24 +43,24 @@
   </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="10.8.1" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.1" />
-		<PackageReference Include="uSync.BackOffice" Version="10.6.1" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.8.1, 11)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.1, 11)" />
+		<PackageReference Include="uSync.BackOffice" Version="[10.6.1, 11)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="11.4.2" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="11.4.2" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="11.4.2" />
-		<PackageReference Include="uSync.BackOffice" Version="11.2.1" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[12.3.4, 13)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[12.3.4, 13)" />
+		<PackageReference Include="uSync.BackOffice" Version="[12.0.2, 13)" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="13.0.0" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="13.0.0" />
-		<PackageReference Include="uSync.BackOffice" Version="13.0.0" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0, 14)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0, 14)" />
+		<PackageReference Include="uSync.BackOffice" Version="[13.0.0, 14)" />
 	</ItemGroup>
 
   <ItemGroup>
