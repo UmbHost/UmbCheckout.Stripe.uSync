@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -41,13 +41,6 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Core" Version="[13.5.3, 13.9999.9999)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.5.3, 13.9999.9999)" />
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.5.3, 13.9999.9999)" />
-		<PackageReference Include="uSync.BackOffice" Version="[13.0.0, 13.9999.9999)" />
-	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
 		<PackageReference Include="Umbraco.Cms.Core" Version="[16.1.1, 16.9999.9999)" />
