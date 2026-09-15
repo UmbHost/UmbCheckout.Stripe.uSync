@@ -1,4 +1,4 @@
-﻿using UmbCheckout.Stripe.Notifications;
+using UmbCheckout.Stripe.Notifications;
 using UmbCheckout.Stripe.uSync.Handlers;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
@@ -9,8 +9,9 @@ namespace UmbCheckout.Stripe.uSync.Composers
     {
         public void Compose(IUmbracoBuilder builder)
         {
-            builder.AddNotificationHandler<OnShippingRateSavedNotification, ShippingRateHandler>();
-            builder.AddNotificationHandler<OnShippingRateDeletedNotification, ShippingRateHandler>();
+            builder.AddNotificationAsyncHandler<OnShippingRateSavedNotification, ShippingRateHandler>();
+            builder.AddNotificationAsyncHandler<OnShippingRateDeletedNotification, ShippingRateHandler>();
+            builder.AddNotificationAsyncHandler<OnStripeSettingsSavedNotification, StripeSettingsHandler>();
         }
     }
 }

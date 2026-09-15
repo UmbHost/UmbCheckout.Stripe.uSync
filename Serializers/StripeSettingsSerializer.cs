@@ -17,46 +17,53 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             _stripeSettingsService = stripeSettingsService;
         }
 
-        protected override SyncAttempt<XElement> SerializeCore(UmbCheckoutStripeSettings item, SyncSerializerOptions options)
+        protected override Task<SyncAttempt<XElement>> SerializeCoreAsync(UmbCheckoutStripeSettings item, SyncSerializerOptions options)
         {
             var node = new XElement(ItemType,
                 new XAttribute("Id", item.Id),
                 new XAttribute("Alias", ItemAlias(item)),
                 new XAttribute("Key", ItemKey(item)));
             node.Add(new XElement("UseLiveApiDetails", item.UseLiveApiDetails));
+            node.Add(new XElement("CollectPhoneNumber", item.CollectPhoneNumber));
+            node.Add(new XElement("ShippingAllowedCountries", item.ShippingAllowedCountries));
+            node.Add(new XElement("CollectPromotionalEmailsConsent", item.CollectPromotionalEmailsConsent));
+            node.Add(new XElement("AllowPromotionalCodes", item.AllowPromotionalCodes));
+            node.Add(new XElement("EnableAbandonedCartRecovery", item.EnableAbandonedCartRecovery));
+            node.Add(new XElement("AllowPromotionalCodesOnRecoveredCarts", item.AllowPromotionalCodesOnRecoveredCarts));
 
 
-            return SyncAttempt<XElement>.Succeed(Consts.Settings.ItemType, node, typeof(UmbCheckoutStripeSettings), ChangeType.Export);
+            return Task.FromResult(SyncAttempt<XElement>.Succeed(Consts.Settings.ItemType, node, typeof(UmbCheckoutStripeSettings), ChangeType.Export));
         }
 
-        protected override SyncAttempt<UmbCheckoutStripeSettings> DeserializeCore(XElement node, SyncSerializerOptions options)
+        protected override Task<SyncAttempt<UmbCheckoutStripeSettings>> DeserializeCoreAsync(XElement node, SyncSerializerOptions options)
         {
             var item = new UmbCheckoutStripeSettings
             {
                 Id = node.Attribute("Id").ValueOrDefault(0),
                 Key = node.GetKey(),
-                UseLiveApiDetails = node!.Element("UseLiveApiDetails").ValueOrDefault<bool>(false)
+                UseLiveApiDetails = node!.Element("UseLiveApiDetails").ValueOrDefault(false),
+                CollectPhoneNumber = node!.Element("CollectPhoneNumber").ValueOrDefault(false),
+                CollectPromotionalEmailsConsent = node!.Element("CollectPromotionalEmailsConsent").ValueOrDefault(false),
+                AllowPromotionalCodes = node!.Element("AllowPromotionalCodes").ValueOrDefault(false),
+                EnableAbandonedCartRecovery = node!.Element("EnableAbandonedCartRecovery").ValueOrDefault(false),
+                AllowPromotionalCodesOnRecoveredCarts = node!.Element("AllowPromotionalCodesOnRecoveredCarts").ValueOrDefault(false),
+                ShippingAllowedCountries = node!.Element("ShippingAllowedCountries")?.Value
             };
 
-            return SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>());
+            return Task.FromResult(SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>()));
         }
 
-        public override UmbCheckoutStripeSettings FindItem(int id)
+        public override async Task<UmbCheckoutStripeSettings?> FindItemAsync(Guid key) =>
+            await _stripeSettingsService.GetStripeSettings() ?? new UmbCheckoutStripeSettings();
+
+        public override Task<UmbCheckoutStripeSettings?> FindItemAsync(string alias)
         {
             throw new NotImplementedException();
         }
 
-        public override UmbCheckoutStripeSettings FindItem(Guid key) =>
-            _stripeSettingsService.GetStripeSettings().Result ?? new UmbCheckoutStripeSettings();
+        public override async Task SaveItemAsync(UmbCheckoutStripeSettings item) => await _stripeSettingsService.UpdateStripeSettings(item);
 
-        public override UmbCheckoutStripeSettings FindItem(string alias)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SaveItem(UmbCheckoutStripeSettings item) => _stripeSettingsService.UpdateStripeSettings(item);
-
-        public override void DeleteItem(UmbCheckoutStripeSettings item) =>
+        public override Task DeleteItemAsync(UmbCheckoutStripeSettings item) =>
             throw new NotImplementedException();
 
         public override string ItemAlias(UmbCheckoutStripeSettings item) => "UmbCheckoutStripeSettings";
