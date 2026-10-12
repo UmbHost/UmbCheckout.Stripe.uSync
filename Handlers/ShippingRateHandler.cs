@@ -1,3 +1,4 @@
+using UmbCheckout.Shared.Notifications;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Models;
@@ -38,7 +39,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
         {
             try
             {
-                var items = await _stripeShippingRateDatabaseService.GetShippingRatesAsync();
+                var items = await UmbCheckoutHooks.ReadStoredAsync(() => _stripeShippingRateDatabaseService.GetShippingRatesAsync());
 
                 var actions = new List<uSyncAction>();
                 foreach (var item in items)
@@ -78,7 +79,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             => Task.FromResult(Enumerable.Empty<ShippingRate>());
 
         protected override async Task<ShippingRate?> GetFromServiceAsync(ShippingRate? item)
-            => item != null ? await _stripeShippingRateDatabaseService.GetShippingRateAsync(item.Key) ?? new ShippingRate() : new ShippingRate();
+            => item != null ? await UmbCheckoutHooks.ReadStoredAsync(() => _stripeShippingRateDatabaseService.GetShippingRateAsync(item.Key)) ?? new ShippingRate() : new ShippingRate();
 
         protected override string GetItemName(ShippingRate item)
             => item.Name;

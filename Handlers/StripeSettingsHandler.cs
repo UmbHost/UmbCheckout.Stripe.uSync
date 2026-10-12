@@ -1,3 +1,4 @@
+using UmbCheckout.Shared.Notifications;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Models;
@@ -35,7 +36,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
         public override async Task<IEnumerable<uSyncAction>> ExportAllAsync(UmbCheckoutStripeSettings? parent, string[] folders, HandlerSettings config,
             SyncUpdateCallback? callback)
         {
-            var item = await _stripeSettingsService.GetStripeSettingsAsync();
+            var item = await UmbCheckoutHooks.ReadStoredAsync(() => _stripeSettingsService.GetStripeSettingsAsync());
 
             var actions = new List<uSyncAction>();
             if (item != null)
@@ -86,7 +87,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             => Task.FromResult(Enumerable.Empty<UmbCheckoutStripeSettings>());
 
         protected override async Task<UmbCheckoutStripeSettings?> GetFromServiceAsync(UmbCheckoutStripeSettings? item)
-            => await _stripeSettingsService.GetStripeSettingsAsync() ?? new UmbCheckoutStripeSettings();
+            => await UmbCheckoutHooks.ReadStoredAsync(() => _stripeSettingsService.GetStripeSettingsAsync()) ?? new UmbCheckoutStripeSettings();
 
         protected override string GetItemName(UmbCheckoutStripeSettings item)
             => item.Id.ToString();

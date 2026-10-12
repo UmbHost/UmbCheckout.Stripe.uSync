@@ -1,3 +1,4 @@
+using UmbCheckout.Shared.Notifications;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
@@ -48,7 +49,7 @@ namespace UmbCheckout.Stripe.uSync.Serializers
         }
 
         public override async Task<ShippingRate?> FindItemAsync(Guid key) =>
-            await _stripeShippingRateDatabaseService.GetShippingRateAsync(key) ?? new ShippingRate();
+            await UmbCheckoutHooks.ReadStoredAsync(() => _stripeShippingRateDatabaseService.GetShippingRateAsync(key)) ?? new ShippingRate();
 
         public override Task<ShippingRate?> FindItemAsync(string alias) =>
             Task.FromResult<ShippingRate?>(null);

@@ -1,3 +1,4 @@
+using UmbCheckout.Shared.Notifications;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
@@ -42,7 +43,7 @@ namespace UmbCheckout.Stripe.uSync.Serializers
         }
 
         public override async Task<UmbCheckoutStripeSettings?> FindItemAsync(Guid key) =>
-            await _stripeSettingsService.GetStripeSettingsAsync() ?? new UmbCheckoutStripeSettings();
+            await UmbCheckoutHooks.ReadStoredAsync(() => _stripeSettingsService.GetStripeSettingsAsync()) ?? new UmbCheckoutStripeSettings();
 
         public override Task<UmbCheckoutStripeSettings?> FindItemAsync(string alias) =>
             Task.FromResult<UmbCheckoutStripeSettings?>(null);
