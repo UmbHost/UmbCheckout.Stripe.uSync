@@ -25,6 +25,12 @@ namespace UmbCheckout.Stripe.uSync.Serializers
                 new XAttribute("Alias", ItemAlias(item)),
                 new XAttribute("Key", ItemKey(item)));
             node.Add(new XElement("UseLiveApiDetails", item.UseLiveApiDetails));
+            node.Add(new XElement("ShippingAllowedCountries", item.ShippingAllowedCountries ?? string.Empty));
+            node.Add(new XElement("CollectPhoneNumber", item.CollectPhoneNumber));
+            node.Add(new XElement("CollectPromotionalEmailsConsent", item.CollectPromotionalEmailsConsent));
+            node.Add(new XElement("AllowPromotionalCodes", item.AllowPromotionalCodes));
+            node.Add(new XElement("EnableAbandonedCartRecovery", item.EnableAbandonedCartRecovery));
+            node.Add(new XElement("AllowPromotionalCodesOnRecoveredCarts", item.AllowPromotionalCodesOnRecoveredCarts));
 
 
             return Task.FromResult(SyncAttempt<XElement>.Succeed(Consts.Settings.ItemType, node, typeof(UmbCheckoutStripeSettings), ChangeType.Export));
@@ -36,7 +42,14 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             {
                 Id = node.Attribute("Id").ValueOrDefault(0),
                 Key = node.GetKey(),
-                UseLiveApiDetails = node!.Element("UseLiveApiDetails").ValueOrDefault<bool>(false)
+                UseLiveApiDetails = node!.Element("UseLiveApiDetails").ValueOrDefault<bool>(false),
+                // Files from older versions only had UseLiveApiDetails: the rest keep their defaults.
+                ShippingAllowedCountries = node.Element("ShippingAllowedCountries")?.Value is { Length: > 0 } countries ? countries : null,
+                CollectPhoneNumber = node.Element("CollectPhoneNumber").ValueOrDefault(false),
+                CollectPromotionalEmailsConsent = node.Element("CollectPromotionalEmailsConsent").ValueOrDefault(false),
+                AllowPromotionalCodes = node.Element("AllowPromotionalCodes").ValueOrDefault(false),
+                EnableAbandonedCartRecovery = node.Element("EnableAbandonedCartRecovery").ValueOrDefault(false),
+                AllowPromotionalCodesOnRecoveredCarts = node.Element("AllowPromotionalCodesOnRecoveredCarts").ValueOrDefault(false)
             };
 
             return Task.FromResult(SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>()));
@@ -48,7 +61,14 @@ namespace UmbCheckout.Stripe.uSync.Serializers
         public override Task<UmbCheckoutStripeSettings?> FindItemAsync(string alias) =>
             Task.FromResult<UmbCheckoutStripeSettings?>(null);
 
-        public override Task SaveItemAsync(UmbCheckoutStripeSettings item) => _stripeSettingsService.UpdateStripeSettingsAsync(item);
+        public override async Task SaveItemAsync(UmbCheckoutStripeSettings item)
+        {
+            // A refused save (e.g. a site's Saving handler cancelled it) must show as a failed import, not a success.
+            if (!await _stripeSettingsService.UpdateStripeSettingsAsync(item))
+            {
+                throw new InvalidOperationException("The Stripe settings were not saved.");
+            }
+        }
 
         public override Task DeleteItemAsync(UmbCheckoutStripeSettings item) =>
             Task.CompletedTask;
