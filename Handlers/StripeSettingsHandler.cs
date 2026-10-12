@@ -21,7 +21,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
     [SyncHandler("umbCheckoutStripeHander", Consts.Settings.HandlerName, Consts.Settings.SerializerFolder, 1,
         Icon = "icon-settings usync-addon-icon", EntityType = Consts.Settings.EntityType)]
     public class StripeSettingsHandler : SyncHandlerRoot<UmbCheckoutStripeSettings, UmbCheckoutStripeSettings>, ISyncHandler,
-        INotificationHandler<OnStripeSettingsSavedNotification>
+        INotificationAsyncHandler<OnStripeSettingsSavedNotification>
     {
         public override string Group => Consts.Group;
 
@@ -60,7 +60,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             return Enumerable.Empty<uSyncAction>();
         }
 
-        public void Handle(OnStripeSettingsSavedNotification notification)
+        public async Task HandleAsync(OnStripeSettingsSavedNotification notification, CancellationToken cancellationToken)
         {
             if (!ShouldProcess()) return;
 
@@ -68,7 +68,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             {
                 if (notification.StripeSettings != null)
                 {
-                    ExportItemAsync(notification.StripeSettings).GetAwaiter().GetResult();
+                    await ExportItemAsync(notification.StripeSettings);
                 }
             }
             catch (Exception ex)

@@ -22,7 +22,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
     [SyncHandler("umbCheckoutStripeShippingHander", Consts.ShippingRate.HandlerName, Consts.ShippingRate.SerializerFolder, 1,
         Icon = "icon-truck usync-addon-icon", EntityType = Consts.ShippingRate.EntityType)]
     public class ShippingRateHandler : SyncHandlerRoot<ShippingRate, ShippingRate>, ISyncHandler,
-        INotificationHandler<OnShippingRateSavedNotification>, INotificationHandler<OnShippingRateDeletedNotification>
+        INotificationAsyncHandler<OnShippingRateSavedNotification>, INotificationAsyncHandler<OnShippingRateDeletedNotification>
     {
         public override string Group => Consts.Group;
 
@@ -94,7 +94,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             return true;
         }
 
-        public void Handle(OnShippingRateSavedNotification notification)
+        public async Task HandleAsync(OnShippingRateSavedNotification notification, CancellationToken cancellationToken)
         {
             if (!ShouldProcess()) return;
 
@@ -102,7 +102,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             {
                 if (notification.ShippingRate != null)
                 {
-                    ExportItemAsync(notification.ShippingRate).GetAwaiter().GetResult();
+                    await ExportItemAsync(notification.ShippingRate);
                 }
             }
             catch (Exception ex)
@@ -111,7 +111,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             }
         }
 
-        public void Handle(OnShippingRateDeletedNotification notification)
+        public async Task HandleAsync(OnShippingRateDeletedNotification notification, CancellationToken cancellationToken)
         {
             if (!ShouldProcess()) return;
 
@@ -121,10 +121,10 @@ namespace UmbCheckout.Stripe.uSync.Handlers
                 {
                     var folder = Path.Combine(RootFolders.First(), this.DefaultFolder);
                     var filename = Path.Combine(folder, $"{GetItemFileName(notification.ShippingRate)}.config");
-                    var attempt = serializer.SerializeEmptyAsync(notification.ShippingRate, SyncActionType.Delete, string.Empty).Result;
+                    var attempt = await serializer.SerializeEmptyAsync(notification.ShippingRate, SyncActionType.Delete, string.Empty);
                     if (attempt.Success && attempt.Item != null)
                     {
-                        syncFileService.SaveXElementAsync(attempt.Item, filename).Wait();
+                        await syncFileService.SaveXElementAsync(attempt.Item, filename);
                     }
                 }
             }
