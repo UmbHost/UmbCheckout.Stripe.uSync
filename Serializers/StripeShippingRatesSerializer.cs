@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Models;
@@ -21,7 +21,7 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             _shortStringHelper = shortStringHelper;
         }
 
-        protected override SyncAttempt<XElement> SerializeCore(ShippingRate item, SyncSerializerOptions options)
+        protected override Task<SyncAttempt<XElement>> SerializeCoreAsync(ShippingRate item, SyncSerializerOptions options)
         {
             var node = new XElement(ItemType,
                 new XAttribute("Id", item.Id),
@@ -31,10 +31,10 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             node.Add(new XElement("Value", item.Value));
 
 
-            return SyncAttempt<XElement>.Succeed(item.Name, node, typeof(ShippingRate), ChangeType.Export);
+            return Task.FromResult(SyncAttempt<XElement>.Succeed(item.Name, node, typeof(ShippingRate), ChangeType.Export));
         }
 
-        protected override SyncAttempt<ShippingRate> DeserializeCore(XElement node, SyncSerializerOptions options)
+        protected override Task<SyncAttempt<ShippingRate>> DeserializeCoreAsync(XElement node, SyncSerializerOptions options)
         {
             var item = new ShippingRate
             {
@@ -44,26 +44,26 @@ namespace UmbCheckout.Stripe.uSync.Serializers
                 Key = node.GetKey()
             };
 
-            return SyncAttempt<ShippingRate>.Succeed(Consts.ShippingRate.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>());
+            return Task.FromResult(SyncAttempt<ShippingRate>.Succeed(Consts.ShippingRate.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>()));
         }
 
-        public override ShippingRate FindItem(int id)
+        public override Task<ShippingRate?> FindItemAsync(Guid key) =>
+            Task.FromResult<ShippingRate?>(_stripeShippingRateDatabaseService.GetShippingRate(key).Result ?? new ShippingRate());
+
+        public override Task<ShippingRate?> FindItemAsync(string alias) =>
+            Task.FromResult<ShippingRate?>(null);
+
+        public override Task SaveItemAsync(ShippingRate item)
         {
-            throw new NotImplementedException();
+            _stripeShippingRateDatabaseService.UpdateShippingRate(item);
+            return Task.CompletedTask;
         }
 
-        public override ShippingRate FindItem(Guid key) =>
-            _stripeShippingRateDatabaseService.GetShippingRate(key).Result ?? new ShippingRate();
-
-        public override ShippingRate FindItem(string alias)
+        public override Task DeleteItemAsync(ShippingRate item)
         {
-            throw new NotImplementedException();
-        }
-
-        public override void SaveItem(ShippingRate item) => _stripeShippingRateDatabaseService.UpdateShippingRate(item);
-
-        public override void DeleteItem(ShippingRate item) =>
             _stripeShippingRateDatabaseService.DeleteShippingRate(item.Key);
+            return Task.CompletedTask;
+        }
 
         public override string ItemAlias(ShippingRate item) => item.Name.ToSafeAlias(_shortStringHelper);
 
