@@ -85,7 +85,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
         protected override Task<IEnumerable<UmbCheckoutStripeSettings>> GetFoldersAsync(UmbCheckoutStripeSettings? parent)
             => Task.FromResult(Enumerable.Empty<UmbCheckoutStripeSettings>());
 
-        protected override async Task<UmbCheckoutStripeSettings> GetFromServiceAsync(UmbCheckoutStripeSettings? item)
+        protected override async Task<UmbCheckoutStripeSettings?> GetFromServiceAsync(UmbCheckoutStripeSettings? item)
             => await _stripeSettingsService.GetStripeSettingsAsync() ?? new UmbCheckoutStripeSettings();
 
         protected override string GetItemName(UmbCheckoutStripeSettings item)

@@ -77,7 +77,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
         protected override Task<IEnumerable<ShippingRate>> GetFoldersAsync(ShippingRate? parent)
             => Task.FromResult(Enumerable.Empty<ShippingRate>());
 
-        protected override async Task<ShippingRate> GetFromServiceAsync(ShippingRate? item)
+        protected override async Task<ShippingRate?> GetFromServiceAsync(ShippingRate? item)
             => item != null ? await _stripeShippingRateDatabaseService.GetShippingRateAsync(item.Key) ?? new ShippingRate() : new ShippingRate();
 
         protected override string GetItemName(ShippingRate item)
@@ -121,7 +121,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
                     var folder = Path.Combine(RootFolders.First(), this.DefaultFolder);
                     var filename = Path.Combine(folder, $"{GetItemFileName(notification.ShippingRate)}.config");
                     var attempt = serializer.SerializeEmptyAsync(notification.ShippingRate, SyncActionType.Delete, string.Empty).Result;
-                    if (attempt.Success)
+                    if (attempt.Success && attempt.Item != null)
                     {
                         syncFileService.SaveXElementAsync(attempt.Item, filename).Wait();
                     }
