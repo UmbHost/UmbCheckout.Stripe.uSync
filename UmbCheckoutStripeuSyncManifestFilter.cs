@@ -25,7 +25,7 @@ namespace UmbCheckout.Stripe.uSync
                 {
                     Id = $"{Shared.Consts.PackageName}.{Stripe.Consts.AppSettingsSectionName}.uSync",
                     Name = $"{Shared.Consts.PackageName}.{Stripe.Consts.AppSettingsSectionName}.uSync",
-                    Version = UmbCheckoutVersion.Version.ToString(3),
+                    Version = UmbCheckoutVersion.PackageVersion,
                     AllowTelemetry = true,
                     Extensions = []
                 }
