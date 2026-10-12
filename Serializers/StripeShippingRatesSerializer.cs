@@ -53,7 +53,14 @@ namespace UmbCheckout.Stripe.uSync.Serializers
         public override Task<ShippingRate?> FindItemAsync(string alias) =>
             Task.FromResult<ShippingRate?>(null);
 
-        public override Task SaveItemAsync(ShippingRate item) => _stripeShippingRateDatabaseService.UpdateShippingRateAsync(item);
+        public override async Task SaveItemAsync(ShippingRate item)
+        {
+            // A refused save (e.g. the Stripe ID belongs to another rate here) must show as a failed item, not a success.
+            if (await _stripeShippingRateDatabaseService.UpdateShippingRateAsync(item) is null)
+            {
+                throw new InvalidOperationException($"Shipping rate {item.Key} ({item.Value}) was not saved: its Stripe ID is used by another shipping rate, or the save failed.");
+            }
+        }
 
         public override Task DeleteItemAsync(ShippingRate item) => _stripeShippingRateDatabaseService.DeleteShippingRateAsync(item.Key);
 
