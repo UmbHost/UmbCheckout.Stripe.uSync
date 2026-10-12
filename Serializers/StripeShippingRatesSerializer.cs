@@ -47,23 +47,15 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             return Task.FromResult(SyncAttempt<ShippingRate>.Succeed(Consts.ShippingRate.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>()));
         }
 
-        public override Task<ShippingRate?> FindItemAsync(Guid key) =>
-            Task.FromResult<ShippingRate?>(_stripeShippingRateDatabaseService.GetShippingRate(key).Result ?? new ShippingRate());
+        public override async Task<ShippingRate?> FindItemAsync(Guid key) =>
+            await _stripeShippingRateDatabaseService.GetShippingRateAsync(key) ?? new ShippingRate();
 
         public override Task<ShippingRate?> FindItemAsync(string alias) =>
             Task.FromResult<ShippingRate?>(null);
 
-        public override Task SaveItemAsync(ShippingRate item)
-        {
-            _stripeShippingRateDatabaseService.UpdateShippingRate(item);
-            return Task.CompletedTask;
-        }
+        public override Task SaveItemAsync(ShippingRate item) => _stripeShippingRateDatabaseService.UpdateShippingRateAsync(item);
 
-        public override Task DeleteItemAsync(ShippingRate item)
-        {
-            _stripeShippingRateDatabaseService.DeleteShippingRate(item.Key);
-            return Task.CompletedTask;
-        }
+        public override Task DeleteItemAsync(ShippingRate item) => _stripeShippingRateDatabaseService.DeleteShippingRateAsync(item.Key);
 
         public override string ItemAlias(ShippingRate item) => item.Name.ToSafeAlias(_shortStringHelper);
 

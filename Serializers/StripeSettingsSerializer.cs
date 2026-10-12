@@ -41,17 +41,13 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             return Task.FromResult(SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>()));
         }
 
-        public override Task<UmbCheckoutStripeSettings?> FindItemAsync(Guid key) =>
-            Task.FromResult<UmbCheckoutStripeSettings?>(_stripeSettingsService.GetStripeSettings().Result ?? new UmbCheckoutStripeSettings());
+        public override async Task<UmbCheckoutStripeSettings?> FindItemAsync(Guid key) =>
+            await _stripeSettingsService.GetStripeSettingsAsync() ?? new UmbCheckoutStripeSettings();
 
         public override Task<UmbCheckoutStripeSettings?> FindItemAsync(string alias) =>
             Task.FromResult<UmbCheckoutStripeSettings?>(null);
 
-        public override Task SaveItemAsync(UmbCheckoutStripeSettings item)
-        {
-            _stripeSettingsService.UpdateStripeSettings(item);
-            return Task.CompletedTask;
-        }
+        public override Task SaveItemAsync(UmbCheckoutStripeSettings item) => _stripeSettingsService.UpdateStripeSettingsAsync(item);
 
         public override Task DeleteItemAsync(UmbCheckoutStripeSettings item) =>
             Task.CompletedTask;
