@@ -11,6 +11,8 @@ namespace UmbCheckout.Stripe.uSync.Composers
         {
             builder.AddNotificationHandler<OnShippingRateSavedNotification, ShippingRateHandler>();
             builder.AddNotificationHandler<OnShippingRateDeletedNotification, ShippingRateHandler>();
+            // Saving the Stripe settings writes their uSync file (the handler was never registered, so no file was written).
+            builder.AddNotificationHandler<OnStripeSettingsSavedNotification, StripeSettingsHandler>();
         }
     }
 }
