@@ -36,23 +36,30 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             return Task.FromResult(SyncAttempt<XElement>.Succeed(Consts.Settings.ItemType, node, typeof(UmbCheckoutStripeSettings), ChangeType.Export));
         }
 
-        protected override Task<SyncAttempt<UmbCheckoutStripeSettings>> DeserializeCoreAsync(XElement node, SyncSerializerOptions options)
+        protected override async Task<SyncAttempt<UmbCheckoutStripeSettings>> DeserializeCoreAsync(XElement node, SyncSerializerOptions options)
         {
+            // Files from older versions lack the newer settings: a setting the file doesn't have keeps the site's current value
+            // (the stored settings, or the defaults on a site with none), rather than being reset.
+            var current = await UmbCheckoutHooks.ReadStoredAsync(() => _stripeSettingsService.GetStripeSettingsAsync()) ?? new UmbCheckoutStripeSettings();
+            bool Flag(string name, bool currentValue) => node.Element(name) is { } element ? element.ValueOrDefault(false) : currentValue;
+
             var item = new UmbCheckoutStripeSettings
             {
                 Id = node.Attribute("Id").ValueOrDefault(0),
                 Key = node.GetKey(),
-                UseLiveApiDetails = node!.Element("UseLiveApiDetails").ValueOrDefault<bool>(false),
-                // Files from older versions only had UseLiveApiDetails: the rest keep their defaults.
-                ShippingAllowedCountries = node.Element("ShippingAllowedCountries")?.Value is { Length: > 0 } countries ? countries : null,
-                CollectPhoneNumber = node.Element("CollectPhoneNumber").ValueOrDefault(false),
-                CollectPromotionalEmailsConsent = node.Element("CollectPromotionalEmailsConsent").ValueOrDefault(false),
-                AllowPromotionalCodes = node.Element("AllowPromotionalCodes").ValueOrDefault(false),
-                EnableAbandonedCartRecovery = node.Element("EnableAbandonedCartRecovery").ValueOrDefault(false),
-                AllowPromotionalCodesOnRecoveredCarts = node.Element("AllowPromotionalCodesOnRecoveredCarts").ValueOrDefault(false)
+                UseLiveApiDetails = Flag("UseLiveApiDetails", current.UseLiveApiDetails),
+                // An empty element clears the list; a missing one keeps it.
+                ShippingAllowedCountries = node.Element("ShippingAllowedCountries") is { } countries
+                    ? countries.Value is { Length: > 0 } list ? list : null
+                    : current.ShippingAllowedCountries,
+                CollectPhoneNumber = Flag("CollectPhoneNumber", current.CollectPhoneNumber),
+                CollectPromotionalEmailsConsent = Flag("CollectPromotionalEmailsConsent", current.CollectPromotionalEmailsConsent),
+                AllowPromotionalCodes = Flag("AllowPromotionalCodes", current.AllowPromotionalCodes),
+                EnableAbandonedCartRecovery = Flag("EnableAbandonedCartRecovery", current.EnableAbandonedCartRecovery),
+                AllowPromotionalCodesOnRecoveredCarts = Flag("AllowPromotionalCodesOnRecoveredCarts", current.AllowPromotionalCodesOnRecoveredCarts)
             };
 
-            return Task.FromResult(SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>()));
+            return SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>());
         }
 
         public override async Task<UmbCheckoutStripeSettings?> FindItemAsync(Guid key) =>
