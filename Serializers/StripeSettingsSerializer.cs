@@ -24,18 +24,38 @@ namespace UmbCheckout.Stripe.uSync.Serializers
                 new XAttribute("Alias", ItemAlias(item)),
                 new XAttribute("Key", ItemKey(item)));
             node.Add(new XElement("UseLiveApiDetails", item.UseLiveApiDetails));
-
+            node.Add(new XElement("ShippingAllowedCountries", item.ShippingAllowedCountries ?? string.Empty));
+            node.Add(new XElement("CollectPhoneNumber", item.CollectPhoneNumber));
+            node.Add(new XElement("CollectPromotionalEmailsConsent", item.CollectPromotionalEmailsConsent));
+            node.Add(new XElement("AllowPromotionalCodes", item.AllowPromotionalCodes));
+            node.Add(new XElement("EnableAbandonedCartRecovery", item.EnableAbandonedCartRecovery));
+            node.Add(new XElement("AllowPromotionalCodesOnRecoveredCarts", item.AllowPromotionalCodesOnRecoveredCarts));
 
             return SyncAttempt<XElement>.Succeed(Consts.Settings.ItemType, node, typeof(UmbCheckoutStripeSettings), ChangeType.Export);
         }
 
         protected override SyncAttempt<UmbCheckoutStripeSettings> DeserializeCore(XElement node, SyncSerializerOptions options)
         {
+            // Files from older versions lack the newer settings: a setting the file doesn't have keeps the site's current value
+            // (the stored settings, or the defaults on a site with none), rather than being reset. uSync 10/13 serializers are
+            // synchronous, so the read is waited for.
+            var current = _stripeSettingsService.GetStripeSettings().GetAwaiter().GetResult() ?? new UmbCheckoutStripeSettings();
+            bool Flag(string name, bool currentValue) => node.Element(name) is { } element ? element.ValueOrDefault(false) : currentValue;
+
             var item = new UmbCheckoutStripeSettings
             {
                 Id = node.Attribute("Id").ValueOrDefault(0),
                 Key = node.GetKey(),
-                UseLiveApiDetails = node!.Element("UseLiveApiDetails").ValueOrDefault<bool>(false)
+                UseLiveApiDetails = Flag("UseLiveApiDetails", current.UseLiveApiDetails),
+                // An empty element clears the list; a missing one keeps it.
+                ShippingAllowedCountries = node.Element("ShippingAllowedCountries") is { } countries
+                    ? countries.Value is { Length: > 0 } list ? list : null
+                    : current.ShippingAllowedCountries,
+                CollectPhoneNumber = Flag("CollectPhoneNumber", current.CollectPhoneNumber),
+                CollectPromotionalEmailsConsent = Flag("CollectPromotionalEmailsConsent", current.CollectPromotionalEmailsConsent),
+                AllowPromotionalCodes = Flag("AllowPromotionalCodes", current.AllowPromotionalCodes),
+                EnableAbandonedCartRecovery = Flag("EnableAbandonedCartRecovery", current.EnableAbandonedCartRecovery),
+                AllowPromotionalCodesOnRecoveredCarts = Flag("AllowPromotionalCodesOnRecoveredCarts", current.AllowPromotionalCodesOnRecoveredCarts)
             };
 
             return SyncAttempt<UmbCheckoutStripeSettings>.Succeed(Consts.Settings.ItemType, item, ChangeType.Import, Array.Empty<uSyncChange>());
