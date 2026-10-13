@@ -74,7 +74,15 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             throw new NotImplementedException();
         }
 
-        public override void SaveItem(UmbCheckoutStripeSettings item) => _stripeSettingsService.UpdateStripeSettings(item);
+        public override void SaveItem(UmbCheckoutStripeSettings item)
+        {
+            // uSync's serializers are synchronous here, so the save is waited for (it was fire-and-forget: a failure was never seen).
+            // A refused save must show as a failed item, not a success.
+            if (!_stripeSettingsService.UpdateStripeSettings(item).GetAwaiter().GetResult())
+            {
+                throw new InvalidOperationException("The Stripe settings were not saved.");
+            }
+        }
 
         public override void DeleteItem(UmbCheckoutStripeSettings item) =>
             throw new NotImplementedException();
