@@ -39,8 +39,8 @@ namespace UmbCheckout.Stripe.uSync.Serializers
         {
             var item = new ShippingRate
             {
-                Name = node!.Element("Name").ValueOrDefault<string>(string.Empty),
-                Value = node!.Element("Value").ValueOrDefault<string>(string.Empty),
+                Name = node.Element("Name").ValueOrDefault<string>(string.Empty),
+                Value = node.Element("Value").ValueOrDefault<string>(string.Empty),
                 Id = node.Attribute("Id").ValueOrDefault(0),
                 Key = node.GetKey()
             };
