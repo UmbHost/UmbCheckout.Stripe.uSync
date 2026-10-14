@@ -1,0 +1,13 @@
+<Project>
+    <!-- Standalone checkouts have no parent; when this repo sits inside UmbCheckout, its props are picked up first -->
+    <PropertyGroup>
+        <ParentDirectoryBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</ParentDirectoryBuildProps>
+    </PropertyGroup>
+    <Import Project="$(ParentDirectoryBuildProps)" Condition="'$(ParentDirectoryBuildProps)' != ''" />
+
+    <PropertyGroup>
+        <!-- Possible nulls fail the build -->
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
+    </PropertyGroup>
+</Project>
