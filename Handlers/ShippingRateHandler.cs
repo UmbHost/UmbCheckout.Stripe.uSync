@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using UmbCheckout.Shared.Notifications;
+using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Models;
 using UmbCheckout.Stripe.Notifications;
@@ -11,36 +12,39 @@ using uSync.BackOffice;
 using uSync.BackOffice.Configuration;
 using uSync.BackOffice.Services;
 using uSync.BackOffice.SyncHandlers;
+using uSync.BackOffice.SyncHandlers.Interfaces;
+using uSync.BackOffice.SyncHandlers.Models;
 using uSync.Core;
+using uSync.Core.Serialization;
 
 namespace UmbCheckout.Stripe.uSync.Handlers
 {
     [SyncHandler("umbCheckoutStripeShippingHander", Consts.ShippingRate.HandlerName, Consts.ShippingRate.SerializerFolder, 1,
         Icon = "icon-truck usync-addon-icon", EntityType = Consts.ShippingRate.EntityType)]
-    public class ShippingRateHandler : SyncHandlerRoot<ShippingRate, ShippingRate>, ISyncHandler, 
-        INotificationHandler<OnShippingRateSavedNotification>, INotificationHandler<OnShippingRateDeletedNotification>
+    public class ShippingRateHandler : SyncHandlerRoot<ShippingRate, ShippingRate>, ISyncHandler,
+        INotificationAsyncHandler<OnShippingRateSavedNotification>, INotificationAsyncHandler<OnShippingRateDeletedNotification>
     {
         public override string Group => Consts.Group;
 
         private readonly IStripeShippingRateDatabaseService _stripeShippingRateDatabaseService;
 
-        public ShippingRateHandler(ILogger<SyncHandlerRoot<ShippingRate, ShippingRate>> logger, AppCaches appCaches, IShortStringHelper shortStringHelper, SyncFileService syncFileService, uSyncEventService mutexService, uSyncConfigService uSyncConfig, ISyncItemFactory itemFactory, IStripeShippingRateDatabaseService stripeShippingRateDatabaseService) : base(logger, appCaches, shortStringHelper, syncFileService, mutexService, uSyncConfig, itemFactory)
+        public ShippingRateHandler(ILogger<SyncHandlerRoot<ShippingRate, ShippingRate>> logger, AppCaches appCaches, IShortStringHelper shortStringHelper, ISyncFileService syncFileService, ISyncEventService mutexService, ISyncConfigService uSyncConfig, ISyncItemFactory itemFactory, IStripeShippingRateDatabaseService stripeShippingRateDatabaseService) : base(logger, appCaches, shortStringHelper, syncFileService, mutexService, uSyncConfig, itemFactory)
         {
-            itemContainerType = UmbracoObjectTypes.Unknown;
+            ItemContainerType = UmbracoObjectTypes.Unknown;
             _stripeShippingRateDatabaseService = stripeShippingRateDatabaseService;
         }
 
-        public override IEnumerable<uSyncAction> ExportAll(ShippingRate parent, string folder, HandlerSettings config,
-            SyncUpdateCallback callback)
+        public override async Task<IEnumerable<uSyncAction>> ExportAllAsync(ShippingRate? parent, string[] folders, HandlerSettings config,
+            SyncUpdateCallback? callback)
         {
             try
             {
-                var items = _stripeShippingRateDatabaseService.GetShippingRates().Result;
+                var items = await UmbCheckoutHooks.ReadStoredAsync(() => _stripeShippingRateDatabaseService.GetShippingRatesAsync());
 
                 var actions = new List<uSyncAction>();
                 foreach (var item in items)
                 {
-                    actions.AddRange(Export(item, Path.Combine(rootFolder, this.DefaultFolder), DefaultConfig));
+                    actions.AddRange(await ExportItemAsync(item));
                 }
 
                 return actions;
@@ -52,17 +56,30 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             }
         }
 
-        protected override IEnumerable<uSyncAction> DeleteMissingItems(ShippingRate parent, IEnumerable<Guid> keysToKeep, bool reportOnly)
-            => Enumerable.Empty<uSyncAction>();
+        private async Task<IEnumerable<uSyncAction>> ExportItemAsync(ShippingRate item)
+        {
+            var folder = Path.Combine(RootFolders.First(), this.DefaultFolder);
+            var attempt = await serializer.SerializeAsync(item, new SyncSerializerOptions());
+            if (attempt.Success && attempt.Item != null)
+            {
+                var filename = Path.Combine(folder, $"{GetItemFileName(item)}.config");
+                await syncFileService.SaveXElementAsync(attempt.Item, filename);
+                return new[] { uSyncAction.SetAction(true, GetItemName(item), change: ChangeType.Export, filename: filename) };
+            }
+            return Enumerable.Empty<uSyncAction>();
+        }
 
-        protected override IEnumerable<ShippingRate> GetChildItems(ShippingRate parent)
-            => Enumerable.Empty<ShippingRate>();
+        protected override Task<IEnumerable<uSyncAction>> DeleteMissingItemsAsync(ShippingRate parent, IEnumerable<Guid> keysToKeep, bool reportOnly)
+            => Task.FromResult(Enumerable.Empty<uSyncAction>());
 
-        protected override IEnumerable<ShippingRate> GetFolders(ShippingRate parent)
-            => Enumerable.Empty<ShippingRate>();
+        protected override Task<IEnumerable<ShippingRate>> GetChildItemsAsync(ShippingRate? parent)
+            => Task.FromResult(Enumerable.Empty<ShippingRate>());
 
-        protected override ShippingRate GetFromService(ShippingRate item)
-            => _stripeShippingRateDatabaseService.GetShippingRate(item.Key).Result ?? new ShippingRate();
+        protected override Task<IEnumerable<ShippingRate>> GetFoldersAsync(ShippingRate? parent)
+            => Task.FromResult(Enumerable.Empty<ShippingRate>());
+
+        protected override async Task<ShippingRate?> GetFromServiceAsync(ShippingRate? item)
+            => item != null ? await UmbCheckoutHooks.ReadStoredAsync(() => _stripeShippingRateDatabaseService.GetShippingRateAsync(item.Key)) ?? new ShippingRate() : new ShippingRate();
 
         protected override string GetItemName(ShippingRate item)
             => item.Name;
@@ -77,7 +94,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             return true;
         }
 
-        public void Handle(OnShippingRateSavedNotification notification)
+        public async Task HandleAsync(OnShippingRateSavedNotification notification, CancellationToken cancellationToken)
         {
             if (!ShouldProcess()) return;
 
@@ -85,11 +102,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             {
                 if (notification.ShippingRate != null)
                 {
-                    var attempts = Export(notification.ShippingRate, Path.Combine(rootFolder, this.DefaultFolder), DefaultConfig);
-                    foreach (var attempt in attempts.Where(x => x.Success))
-                    {
-                        CleanUp(notification.ShippingRate, attempt.FileName, Path.Combine(rootFolder, this.DefaultFolder));
-                    }
+                    await ExportItemAsync(notification.ShippingRate);
                 }
             }
             catch (Exception ex)
@@ -98,7 +111,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             }
         }
 
-        public void Handle(OnShippingRateDeletedNotification notification)
+        public async Task HandleAsync(OnShippingRateDeletedNotification notification, CancellationToken cancellationToken)
         {
             if (!ShouldProcess()) return;
 
@@ -106,13 +119,12 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             {
                 if (notification.ShippingRate != null)
                 {
-                    var filename = GetPath(Path.Combine(rootFolder, this.DefaultFolder), notification.ShippingRate,
-                        DefaultConfig.GuidNames, DefaultConfig.UseFlatStructure);
-                    var attempt = serializer.SerializeEmpty(notification.ShippingRate, SyncActionType.Delete, string.Empty);
-                    if (attempt.Success)
+                    var folder = Path.Combine(RootFolders.First(), this.DefaultFolder);
+                    var filename = Path.Combine(folder, $"{GetItemFileName(notification.ShippingRate)}.config");
+                    var attempt = await serializer.SerializeEmptyAsync(notification.ShippingRate, SyncActionType.Delete, string.Empty);
+                    if (attempt.Success && attempt.Item != null)
                     {
-                        syncFileService.SaveXElement(attempt.Item, filename);
-                        CleanUp(notification.ShippingRate, filename, Path.Combine(rootFolder, this.DefaultFolder));
+                        await syncFileService.SaveXElementAsync(attempt.Item, filename);
                     }
                 }
             }

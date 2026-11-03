@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using UmbCheckout.Shared.Notifications;
+using Microsoft.Extensions.Logging;
 using UmbCheckout.Stripe.Interfaces;
 using UmbCheckout.Stripe.Models;
 using UmbCheckout.Stripe.Notifications;
@@ -10,40 +11,56 @@ using uSync.BackOffice;
 using uSync.BackOffice.Configuration;
 using uSync.BackOffice.Services;
 using uSync.BackOffice.SyncHandlers;
+using uSync.BackOffice.SyncHandlers.Interfaces;
+using uSync.BackOffice.SyncHandlers.Models;
 using uSync.Core;
+using uSync.Core.Serialization;
 
 namespace UmbCheckout.Stripe.uSync.Handlers
 {
     [SyncHandler("umbCheckoutStripeHander", Consts.Settings.HandlerName, Consts.Settings.SerializerFolder, 1,
         Icon = "icon-settings usync-addon-icon", EntityType = Consts.Settings.EntityType)]
     public class StripeSettingsHandler : SyncHandlerRoot<UmbCheckoutStripeSettings, UmbCheckoutStripeSettings>, ISyncHandler,
-        INotificationHandler<OnStripeSettingsSavedNotification>
+        INotificationAsyncHandler<OnStripeSettingsSavedNotification>
     {
         public override string Group => Consts.Group;
 
         private readonly IStripeSettingsService _stripeSettingsService;
-        public StripeSettingsHandler(ILogger<SyncHandlerRoot<UmbCheckoutStripeSettings, UmbCheckoutStripeSettings>> logger, AppCaches appCaches, IShortStringHelper shortStringHelper, SyncFileService syncFileService, uSyncEventService mutexService, uSyncConfigService uSyncConfig, ISyncItemFactory itemFactory, IStripeSettingsService stripeSettingsService) : base(logger, appCaches, shortStringHelper, syncFileService, mutexService, uSyncConfig, itemFactory)
+        public StripeSettingsHandler(ILogger<SyncHandlerRoot<UmbCheckoutStripeSettings, UmbCheckoutStripeSettings>> logger, AppCaches appCaches, IShortStringHelper shortStringHelper, ISyncFileService syncFileService, ISyncEventService mutexService, ISyncConfigService uSyncConfig, ISyncItemFactory itemFactory, IStripeSettingsService stripeSettingsService) : base(logger, appCaches, shortStringHelper, syncFileService, mutexService, uSyncConfig, itemFactory)
         {
             _stripeSettingsService = stripeSettingsService;
 
-            itemContainerType = UmbracoObjectTypes.Unknown;
+            ItemContainerType = UmbracoObjectTypes.Unknown;
         }
 
-        public override IEnumerable<uSyncAction> ExportAll(UmbCheckoutStripeSettings parent, string folder, HandlerSettings config,
-            SyncUpdateCallback callback)
+        public override async Task<IEnumerable<uSyncAction>> ExportAllAsync(UmbCheckoutStripeSettings? parent, string[] folders, HandlerSettings config,
+            SyncUpdateCallback? callback)
         {
-            var item = _stripeSettingsService.GetStripeSettings().Result;
+            var item = await UmbCheckoutHooks.ReadStoredAsync(() => _stripeSettingsService.GetStripeSettingsAsync());
 
             var actions = new List<uSyncAction>();
             if (item != null)
             {
-                actions.AddRange(Export(item, Path.Combine(rootFolder, DefaultFolder), DefaultConfig));
+                actions.AddRange(await ExportItemAsync(item));
             }
 
             return actions;
         }
 
-        public void Handle(OnStripeSettingsSavedNotification notification)
+        private async Task<IEnumerable<uSyncAction>> ExportItemAsync(UmbCheckoutStripeSettings item)
+        {
+            var folder = Path.Combine(RootFolders.First(), DefaultFolder);
+            var attempt = await serializer.SerializeAsync(item, new SyncSerializerOptions());
+            if (attempt.Success && attempt.Item != null)
+            {
+                var filename = Path.Combine(folder, $"{GetItemFileName(item)}.config");
+                await syncFileService.SaveXElementAsync(attempt.Item, filename);
+                return new[] { uSyncAction.SetAction(true, GetItemName(item), change: ChangeType.Export, filename: filename) };
+            }
+            return Enumerable.Empty<uSyncAction>();
+        }
+
+        public async Task HandleAsync(OnStripeSettingsSavedNotification notification, CancellationToken cancellationToken)
         {
             if (!ShouldProcess()) return;
 
@@ -51,11 +68,7 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             {
                 if (notification.StripeSettings != null)
                 {
-                    var attempts = Export(notification.StripeSettings, Path.Combine(rootFolder, DefaultFolder), DefaultConfig);
-                    foreach (var attempt in attempts.Where(x => x.Success))
-                    {
-                        CleanUp(notification.StripeSettings, attempt.FileName, Path.Combine(rootFolder, DefaultFolder));
-                    }
+                    await ExportItemAsync(notification.StripeSettings);
                 }
             }
             catch (Exception ex)
@@ -64,17 +77,17 @@ namespace UmbCheckout.Stripe.uSync.Handlers
             }
         }
 
-        protected override IEnumerable<uSyncAction> DeleteMissingItems(UmbCheckoutStripeSettings parent, IEnumerable<Guid> keysToKeep, bool reportOnly)
-            => Enumerable.Empty<uSyncAction>();
+        protected override Task<IEnumerable<uSyncAction>> DeleteMissingItemsAsync(UmbCheckoutStripeSettings parent, IEnumerable<Guid> keysToKeep, bool reportOnly)
+            => Task.FromResult(Enumerable.Empty<uSyncAction>());
 
-        protected override IEnumerable<UmbCheckoutStripeSettings> GetChildItems(UmbCheckoutStripeSettings parent)
-            => Enumerable.Empty<UmbCheckoutStripeSettings>();
+        protected override Task<IEnumerable<UmbCheckoutStripeSettings>> GetChildItemsAsync(UmbCheckoutStripeSettings? parent)
+            => Task.FromResult(Enumerable.Empty<UmbCheckoutStripeSettings>());
 
-        protected override IEnumerable<UmbCheckoutStripeSettings> GetFolders(UmbCheckoutStripeSettings parent)
-            => Enumerable.Empty<UmbCheckoutStripeSettings>();
+        protected override Task<IEnumerable<UmbCheckoutStripeSettings>> GetFoldersAsync(UmbCheckoutStripeSettings? parent)
+            => Task.FromResult(Enumerable.Empty<UmbCheckoutStripeSettings>());
 
-        protected override UmbCheckoutStripeSettings GetFromService(UmbCheckoutStripeSettings item)
-            => _stripeSettingsService.GetStripeSettings().Result ?? new UmbCheckoutStripeSettings();
+        protected override async Task<UmbCheckoutStripeSettings?> GetFromServiceAsync(UmbCheckoutStripeSettings? item)
+            => await UmbCheckoutHooks.ReadStoredAsync(() => _stripeSettingsService.GetStripeSettingsAsync()) ?? new UmbCheckoutStripeSettings();
 
         protected override string GetItemName(UmbCheckoutStripeSettings item)
             => item.Id.ToString();
