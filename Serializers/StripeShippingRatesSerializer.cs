@@ -38,8 +38,8 @@ namespace UmbCheckout.Stripe.uSync.Serializers
         {
             var item = new ShippingRate
             {
-                Name = node!.Element("Name").ValueOrDefault<string>(string.Empty),
-                Value = node!.Element("Value").ValueOrDefault<string>(string.Empty),
+                Name = node.Element("Name").ValueOrDefault<string>(string.Empty),
+                Value = node.Element("Value").ValueOrDefault<string>(string.Empty),
                 Id = node.Attribute("Id").ValueOrDefault(0),
                 Key = node.GetKey()
             };
@@ -60,7 +60,15 @@ namespace UmbCheckout.Stripe.uSync.Serializers
             throw new NotImplementedException();
         }
 
-        public override void SaveItem(ShippingRate item) => _stripeShippingRateDatabaseService.UpdateShippingRate(item);
+        public override void SaveItem(ShippingRate item)
+        {
+            // uSync's serializers are synchronous here, so the save is waited for (it was fire-and-forget: a failure was never seen).
+            // A refused save (e.g. the Stripe ID belongs to another rate) must show as a failed item, not a success.
+            if (_stripeShippingRateDatabaseService.UpdateShippingRate(item).GetAwaiter().GetResult() is null)
+            {
+                throw new InvalidOperationException($"Shipping rate {item.Key} ({item.Value}) was not saved: its Stripe ID is used by another shipping rate, or the save failed.");
+            }
+        }
 
         public override void DeleteItem(ShippingRate item) =>
             _stripeShippingRateDatabaseService.DeleteShippingRate(item.Key);
